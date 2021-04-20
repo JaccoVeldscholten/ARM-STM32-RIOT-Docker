@@ -50,6 +50,9 @@ RUN \
     && echo 'Cleaning up installation files' >&2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+
+# Adding ToolChain for STM32 Processors #
+
 RUN echo 'Installing arm-none-eabi toolchain from arm.com' >&2 && \
     mkdir -p /opt && \
     curl -L -o /opt/gcc-arm-none-eabi.tar.bz2 ${ARM_URL} && \
@@ -61,6 +64,32 @@ RUN echo 'Installing arm-none-eabi toolchain from arm.com' >&2 && \
     # No need to dedup, the ARM toolchain is already using hard links for the duplicated files
 
 ENV PATH ${PATH}:/opt/${ARM_FOLDER}/bin
+
+# Adding ToolChain for ESP Processors #
+RUN echo 'Installing ESP32 toolchain' >&2 && \
+    mkdir -p /opt/esp && \
+    cd /opt/esp && \
+    git clone https://github.com/espressif/esp-idf.git && \
+    cd esp-idf && \
+    git checkout -q f198339ec09e90666150672884535802304d23ec && \
+    git submodule update --init --recursive && \
+    rm -rf .git* docs examples make tools && \
+    rm -f add_path.sh CONTRIBUTING.rst Kconfig Kconfig.compiler && \
+    cd components && \
+    rm -rf app_trace app_update aws_iot bootloader bt coap console cxx \
+           esp_adc_cal espcoredump esp_http_client esp-tls expat fatfs \
+           freertos idf_test jsmn json libsodium log lwip mbedtls mdns \
+           micro-ecc nghttp openssl partition_table pthread sdmmc spiffs \
+           tcpip_adapter ulp vfs wear_levelling xtensa-debug-module && \
+    find . -name '*.[csS]' -exec rm {} \; && \
+    cd /opt/esp && \
+    git clone https://github.com/gschorcht/xtensa-esp32-elf.git && \
+    cd xtensa-esp32-elf && \
+    git checkout -q 414d1f3a577702e927973bd906357ee00d7a6c6c
+
+ENV PATH $PATH:/opt/esp/xtensa-esp32-elf/bin
+
+
 # Get New Repo
 RUN git clone https://github.com/RIOT-OS/RIOT.git
 
