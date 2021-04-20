@@ -46,6 +46,7 @@ RUN \
         unzip \
         vim-common \
         xsltproc \
+        nano \
     && echo 'Cleaning up installation files' >&2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
